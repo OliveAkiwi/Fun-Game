@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple GitHub Game</title>
+    <style>
+        body { text-align: center; background: #222; color: white; font-family: sans-serif; }
+        canvas { background: #111; display: block; margin: 20px auto; border: 2px solid #fff; }
+    </style>
+</head>
+<body>
+    <h1>Block Dodger</h1>
+    <p>Use Left and Right arrow keys to move. Don't get hit!</p>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let player = { x: 180, y: 360, size: 30, speed: 5 };
+        let obstacle = { x: Math.random() * 370, y: 0, size: 30, speed: 4 };
+        let keys = {};
+        let score = 0;
+        let gameOver = false;
+
+        window.addEventListener("keydown", e => keys[e.code] = true);
+        window.addEventListener("keyup", e => keys[e.code] = false);
+
+        function update() {
+            if (gameOver) return;
+
+            if (keys["ArrowLeft"] && player.x > 0) player.x -= player.speed;
+            if (keys["ArrowRight"] && player.x < canvas.width - player.size) player.x += player.speed;
+
+            obstacle.y += obstacle.speed;
+
+            // Reset obstacle when it falls off screen
+            if (obstacle.y > canvas.height) {
+                obstacle.y = 0;
+                obstacle.x = Math.random() * (canvas.width - obstacle.size);
+                score++;
+                obstacle.speed += 0.3; // Make it faster
+            }
+
+            // Collision detection
+            if (player.x < obstacle.x + obstacle.size &&
+                player.x + player.size > obstacle.x &&
+                player.y < obstacle.y + obstacle.size &&
+                player.y + player.size > obstacle.y) {
+                gameOver = true;
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Player (Blue)
+            ctx.fillStyle = "#3498db";
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+
+            // Draw Obstacle (Red)
+            ctx.fillStyle = "#e74c3c";
+            ctx.fillRect(obstacle.x, obstacle.y, obstacle.size, obstacle.size);
+
+            // Draw Score
+            ctx.fillStyle = "#fff";
+            ctx.font = "20px Arial";
+            ctx.fillText("Score: " + score, 10, 25);
+
+            if (gameOver) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#fff";
+                ctx.font = "30px Arial";
+                ctx.fillText("Game Over!", 120, 200);
+                ctx.font = "20px Arial";
+                ctx.fillText("Refresh page to restart", 100, 240);
+            }
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
